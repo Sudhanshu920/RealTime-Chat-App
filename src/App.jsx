@@ -1,3 +1,4 @@
+import Home from './pages/home';
 import Login from './pages/login';
 import Register from './pages/register';
 import './styles.scss';
@@ -5,8 +6,9 @@ import './styles.scss';
 function App() {
   return (
     <div>
-    <Register/>
-    <Login />
+      <Register />
+      <Login />
+      <Home />
     </div>
   );
 }
