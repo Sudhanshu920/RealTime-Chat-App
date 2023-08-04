@@ -1,69 +1,53 @@
-import React from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { chatContext } from '../context/chatContext';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
+import { AuthContext } from '../context/authContext';
 
 const ChatMessage = () => {
+  const [messages, setMessages] = useState([]);
+  const { data } = useContext(chatContext);
+  const currentUser = useContext(AuthContext);
+
+  const ref = useRef();
+
+  useEffect(() => {
+    ref.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'chats', data.chatID), (doc) => {
+      doc.exists() && setMessages(doc.data().messages);
+    });
+
+    return () => {
+      unsub();
+    };
+  }, [data.chatID]);
   return (
-    <div className="messages">
-      <div className="msg">
-        <div className="msgDetails">
-          <img
-            src="https://images.pexels.com/photos/17055104/pexels-photo-17055104/free-photo-of-portrait-of-a-tattooed-brunette-wearing-a-green-dress.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-            alt=""
-          />
-          <span>just now</span>
+    <div className="message">
+      {messages.map((m, index) => (
+        <div
+          ref={messages.length - 1 === index ? ref : null}
+          className={`msg ${m.senderId === currentUser.uid && 'owner'}`}
+          key={m.id}
+        >
+          <div className="msgDetails">
+            <img
+              src={
+                m.senderId === currentUser.uid
+                  ? currentUser.photoURL
+                  : data.user.photoURL
+              }
+            />
+            <span>just now</span>
+          </div>
+          <div className="msgContent">
+            <span>{m.text}</span>
+            {m.img && <img src={m.img} alt="" />}
+          </div>
         </div>
-        <div className="msgContent">
-          <span>hello user</span>
-          {/* <img
-            src="https://images.pexels.com/photos/17055104/pexels-photo-17055104/free-photo-of-portrait-of-a-tattooed-brunette-wearing-a-green-dress.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-            alt=""
-          /> */}
-        </div>
-      </div>
-      <div className="msg">
-        <div className="msgDetails">
-          <img
-            src="https://images.pexels.com/photos/17055104/pexels-photo-17055104/free-photo-of-portrait-of-a-tattooed-brunette-wearing-a-green-dress.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-            alt=""
-          />
-          <span>just now</span>
-        </div>
-        <div className="msgContent">
-          <span>how are you doing today?</span>
-        </div>
-      </div>
-      <div className="msg">
-        <div className="msgDetails">
-          <img
-            src="https://images.pexels.com/photos/17055104/pexels-photo-17055104/free-photo-of-portrait-of-a-tattooed-brunette-wearing-a-green-dress.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-            alt=""
-          />
-          <span>just now</span>
-        </div>
-        <div className="msgContent">
-          <span>
-            i am so happy to inform you that you are selected for the role of
-            full stack developer
-          </span>
-        </div>
-      </div>
-      <div className="msg">
-        <div className="msgDetails">
-          <img
-            src="https://images.pexels.com/photos/17055104/pexels-photo-17055104/free-photo-of-portrait-of-a-tattooed-brunette-wearing-a-green-dress.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-            alt=""
-          />
-          <span>just now</span>
-        </div>
-        <div className="msgContent">
-          <span>
-            thank you. i am very happy to hear thatthank you. i am very happy to
-            hear that thank you. i am very happy to hear thatthank you. i am
-            very happy to hear that thank you. i am very happy to hear thatthank
-            you. i am very happy to hear that thank you. i am very happy to hear
-            that
-          </span>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };

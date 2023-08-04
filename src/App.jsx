@@ -1,15 +1,38 @@
+import { useContext } from 'react';
 import Home from './pages/home';
 import Login from './pages/login';
 import Register from './pages/register';
 import './styles.scss';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthContext } from './context/authContext';
 
 function App() {
+  const currentUser = useContext(AuthContext);
+
+  const ProtectedRoute = ({ children }) => {
+    if (!currentUser) {
+      return <Navigate to="/login" />;
+    }
+    return children;
+  };
+
   return (
-    <div>
-      <Register />
-      <Login />
-      <Home />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/">
+          <Route
+            index
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="register" element={<Register />} />
+          <Route path="login" element={<Login />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
